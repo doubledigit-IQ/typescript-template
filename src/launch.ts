@@ -22,7 +22,7 @@ export async function main(ns: NS): Promise<void> {
         }
     }
 
-    function deployToServers(oServers: UTILS.ServerData, nHomeRamBuffer: number) {
+    function deployToServers(oServers: UTILS.ServerData, nHomeRamBuffer: number, nDefaultPartitionSize: number) {
         for (let i = 0; i < Object.keys(oServers).length; i++) {
             const sServerToHack = Object.keys(oServers)[i];
             if (!oServers[sServerToHack].bHackable) {
@@ -72,13 +72,31 @@ export async function main(ns: NS): Promise<void> {
                     continue;
                 }
 
+                var nPartitionSize = Math.floor(nThreadsToRun / 100);
+                nPartitionSize = Math.max(nPartitionSize, nDefaultPartitionSize);
+
+                var nFullPartitions = Math.floor(nThreadsToRun / nPartitionSize);
+                var nRemainingThreads = nThreadsToRun % nPartitionSize;
+
+                var aPartitions = [];
+                for (let k = 0; k < nFullPartitions; k++) {
+                    aPartitions.push(nPartitionSize);
+                }
+                if (nRemainingThreads > 0) {
+                    aPartitions.push(nRemainingThreads);
+                }
+
                 const bHack = true;
                 const bGrow = true;
                 const bWeaken = true;
+                const bShare = false;
                 const bLoop = false;
-                const nRET = doExec("attack.js", sServerToDeploy, nThreadsToRun, sServerToHack, bHack, bGrow, bWeaken, bLoop);
-                if (nRET <= 0) {
-                    continue;
+                for (let k = 0; k < aPartitions.length; k++) {
+                    var nPartitionThreads = aPartitions[k];
+                    const nRET = doExec("attack.js", sServerToDeploy, nPartitionThreads, sServerToHack, bHack, bGrow, bWeaken, bShare, bLoop);
+                    if (nRET <= 0) {
+                        continue;
+                    }
                 }
 
                 oServers[sServerToDeploy].nRamAvailable -= nThreadsToRun * nScriptRam;
@@ -86,17 +104,22 @@ export async function main(ns: NS): Promise<void> {
                 if (nThreadsStillNeeded - nThreadsToRun <= 0) {
                     ns.tprint("finished branch " + sServerToHack);
                     ns.tprint("threads used: " + nThreadsDeployed);
+                    ns.tprint("partitions used: " + aPartitions.length);
                 }
             }
         }
-    } 
+        UTILS.writeDATA(ns, oServers);
+        
+    }
 
     const sAttackFile = "attack.js";
     let bFirstLoop = true;
     let bLoop = true;
 
-    doExec("hacknet.js", "home");
-    doExec("DATA.js", "home"); 
+    var nDefaultPartitionSize = 10;
+
+    // doExec("hacknet.js", "home"); 
+    doExec("DATA.js", "home");
 
     while (bLoop) {
         let nHomeRamBuffer = 0;
@@ -116,7 +139,7 @@ export async function main(ns: NS): Promise<void> {
             deployAttackFile(oServers, sAttackFile);
         }
 
-        deployToServers(oServers, nHomeRamBuffer);
+        deployToServers(oServers, nHomeRamBuffer, nDefaultPartitionSize);
         await ns.sleep(5000);
     }
 }

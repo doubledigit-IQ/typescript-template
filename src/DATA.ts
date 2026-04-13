@@ -191,7 +191,7 @@ export async function main(ns: NS): Promise<void> {
     }
 
     function buyServers(): void {
-        const nMaxServers = ns.getPurchasedServerLimit(); 
+        const nMaxServers = ns.getPurchasedServerLimit();
 
         for (let i = 0; i < nMaxServers; i++) {
             const sServer = `server-${i}`;
@@ -209,12 +209,11 @@ export async function main(ns: NS): Promise<void> {
                     ns.tprint("upgraded server " + sServer + " for " + nUpgradeCost);
                 }
             }
-
         }
     }
 
-    buyServers();
     while (true) {
+        buyServers();
         const aServers: string[] = scanServers();
         let oServers: UTILS.ServerData = getServerData(aServers);
         oServers = autohack(oServers);

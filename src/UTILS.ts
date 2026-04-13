@@ -28,7 +28,7 @@ export interface ServerData {
 
 export async function readDATA(ns: NS): Promise<ServerData> {
     const retryDelayMs = 10;
-    const maxAttempts = 1000; 
+    const maxAttempts = 1000;
     let attempts = 0;
 
     while (true) {
