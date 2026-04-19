@@ -4,7 +4,7 @@ export async function main(ns: NS): Promise<void> {
     function myMoney() { 
         return ns.getServerMoneyAvailable("home");
     }
-    var maxMoneyServerSpend: number = 5000000;
+    var maxMoneyServerSpend: number = 100000000; 
     var nodes: number = 0;
     var ref: number = 0;
     ns.disableLog("ALL");

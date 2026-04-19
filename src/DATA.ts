@@ -6,6 +6,10 @@ export async function main(ns: NS): Promise<void> {
         return ns.getServerMoneyAvailable("home");
     }
 
+    function serverExists(sServer: string): boolean {
+        return ns.serverExists(sServer);
+    }
+
     function exe0(sServer: string): void {
         ns.nuke(sServer);
     }
@@ -119,7 +123,7 @@ export async function main(ns: NS): Promise<void> {
 
         for (let i = 0; i < aServers.length; i++) {
             const server = aServers[i];
-            if (ns.serverExists(server)) {
+            if (serverExists(server)) {
                 const nMaxMoney = ns.getServerMaxMoney(server);
                 const nMoneyAvailable = ns.getServerMoneyAvailable(server);
                 const nMaxRam = ns.getServerMaxRam(server);
@@ -173,20 +177,21 @@ export async function main(ns: NS): Promise<void> {
     function autohack(oServers: UTILS.ServerData): UTILS.ServerData {
         for (let i = 0; i < Object.keys(oServers).length; i++) {
             const sServer = Object.keys(oServers)[i];
-            const ret = openPorts(sServer, oServers);
-            const nPlayerHackingLevel = ns.getHackingLevel();
-            const bHackable = oServers[sServer].bHackable && nPlayerHackingLevel >= oServers[sServer].nHackingLevel;
-            const bDeployable = oServers[sServer].bDeployable;
+            if (serverExists(sServer)) {
+                const ret = openPorts(sServer, oServers);
+                const nPlayerHackingLevel = ns.getHackingLevel();
+                const bHackable = oServers[sServer].bHackable && nPlayerHackingLevel >= oServers[sServer].nHackingLevel;
+                const bDeployable = oServers[sServer].bDeployable;
 
-            if (ret != null) {
-                oServers[sServer].bHackable = bHackable;
-                oServers[sServer].bDeployable = bDeployable;
-            } else {
-                oServers[sServer].bHackable = false;
-                oServers[sServer].bDeployable = false;
+                if (ret != null) {
+                    oServers[sServer].bHackable = bHackable;
+                    oServers[sServer].bDeployable = bDeployable;
+                } else {
+                    oServers[sServer].bHackable = false;
+                    oServers[sServer].bDeployable = false;
+                }
             }
         }
-
         return oServers;
     }
 
@@ -195,7 +200,7 @@ export async function main(ns: NS): Promise<void> {
 
         for (let i = 0; i < nMaxServers; i++) {
             const sServer = `server-${i}`;
-            if (!ns.serverExists(sServer)) {
+            if (!serverExists(sServer)) {
                 var success = ns.purchaseServer(sServer, 2);
                 if (success.length > 0) {
                     ns.tprint("purchased server " + sServer + " " + success);
@@ -213,12 +218,12 @@ export async function main(ns: NS): Promise<void> {
     }
 
     while (true) {
-        buyServers();
+        // buyServers();
         const aServers: string[] = scanServers();
         let oServers: UTILS.ServerData = getServerData(aServers);
         oServers = autohack(oServers);
         oServers = sortServerData(oServers);
         UTILS.writeDATA(ns, oServers);
-        await ns.sleep(5000);
+        await ns.sleep(2000);
     }
 }
