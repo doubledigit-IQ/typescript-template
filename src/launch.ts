@@ -131,7 +131,7 @@ export async function main(ns: NS): Promise<void> {
         //                 const bGrow = false;
         //                 const bWeaken = false;
         //                 const bShare = true;
-        //                 const bLoop = false;
+        //                 const bLoop = true; 
         //                 const nRET = doExec("attack.js", sServerToDeploy, nPartitionThreads, "home", bHack, bGrow, bWeaken, bShare, bLoop);
         //                 if (nRET > 0) {
         //                     // ns.tprint(`|\t${sServerToDeploy.padEnd(20)} is sharing with ${String(nPartitionThreads).padStart(5)} threads`);
